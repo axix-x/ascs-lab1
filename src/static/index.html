@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Brain — Персональна система керування знаннями</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo-area">
+            <span class="logo-icon">🧠</span>
+            <div>
+                <h1>Second Brain</h1>
+                <span class="sub-title">АСКС • ЛПНУ • Локальне сховище</span>
+            </div>
+        </div>
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Пошук за назвою, вмістом або тегами...">
+            <button id="clearSearch" class="btn-clear" style="display:none;">✕</button>
+        </div>
+        <div class="header-actions">
+            <button id="btnNewNote" class="btn btn-primary">+ Нова нотатка</button>
+            <a href="/warmup" class="btn btn-secondary">Warmup</a>
+        </div>
+    </header>
+
+    <div class="app-body">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <section class="sidebar-section">
+                <h3>Категорії PARA</h3>
+                <ul class="nav-list" id="categoryList">
+                    <li class="active" data-cat="all">
+                        <span class="nav-label">Усі нотатки</span>
+                        <span class="badge" id="badge-all">0</span>
+                    </li>
+                    <li data-cat="Inbox">
+                        <span class="nav-label">📥 Inbox</span>
+                        <span class="badge" id="badge-inbox">0</span>
+                    </li>
+                    <li data-cat="Projects">
+                        <span class="nav-label">🎯 Projects</span>
+                        <span class="badge" id="badge-projects">0</span>
+                    </li>
+                    <li data-cat="Areas">
+                        <span class="nav-label">🔭 Areas</span>
+                        <span class="badge" id="badge-areas">0</span>
+                    </li>
+                    <li data-cat="Resources">
+                        <span class="nav-label">📚 Resources</span>
+                        <span class="badge" id="badge-resources">0</span>
+                    </li>
+                    <li data-cat="Archives">
+                        <span class="nav-label">📦 Archives</span>
+                        <span class="badge" id="badge-archives">0</span>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="sidebar-section">
+                <h3>Теги</h3>
+                <div class="tag-cloud" id="tagCloud">
+                    <span class="tag-item active" data-tag="all">усі</span>
+                </div>
+            </section>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot"></span>
+                    <span>100% Локально & Приватно</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Notes Column -->
+        <section class="notes-column">
+            <div class="notes-header">
+                <div>
+                    <h2 id="activeFilterTitle">Усі нотатки</h2>
+                    <span class="notes-count" id="notesCounter">Знайдено: 0</span>
+                </div>
+                <div class="sort-selector">
+                    <label>Сортування:</label>
+                    <select id="sortSelect">
+                        <option value="updated">Останні оновлені</option>
+                        <option value="title">За алфавітом</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="notes-list" id="notesList">
+                <!-- Dynamically loaded cards -->
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="main-viewer" id="mainViewer">
+            <div class="placeholder-state" id="emptyViewer">
+                <span class="placeholder-icon">📖</span>
+                <h3>Оберіть нотатку для перегляду</h3>
+                <p>Клацніть на будь-яку картку в списку ліворуч або створіть нову нотатку.</p>
+            </div>
+
+            <article class="note-article" id="noteContent" style="display:none;">
+                <div class="article-header">
+                    <div class="article-meta-top">
+                        <span class="category-pill" id="viewCategory">Resources</span>
+                        <span class="status-pill" id="viewStatus">active</span>
+                        <span class="date-text" id="viewUpdated">Оновлено: 2026-10-29</span>
+                    </div>
+                    <h1 class="article-title" id="viewTitle">Назва нотатки</h1>
+                    <div class="article-tags" id="viewTags"></div>
+                    <div class="article-source" id="viewSourceWrap">
+                        <strong>Першоджерело:</strong> <span id="viewSource">-</span>
+                    </div>
+                    <div class="article-actions">
+                        <button id="btnEdit" class="btn btn-sm btn-outline">✏️ Редагувати</button>
+                    </div>
+                </div>
+
+                <div class="article-body" id="viewBody">
+                    <!-- Parsed HTML content -->
+                </div>
+
+                <!-- Backlinks section -->
+                <div class="backlinks-section" id="backlinksWrap" style="display:none;">
+                    <h3>🔗 Зворотні зв'язки (Backlinks)</h3>
+                    <p class="section-desc">Інші нотатки, що посилаються на цю тему:</p>
+                    <div class="backlinks-list" id="backlinksList"></div>
+                </div>
+
+                <!-- Editor mode -->
+                <div class="editor-pane" id="editorPane" style="display:none;">
+                    <h3>Редагування вмісту нотатки (Markdown)</h3>
+                    <textarea id="editContent" rows="18"></textarea>
+                    <div class="editor-actions">
+                        <button id="btnSaveEdit" class="btn btn-primary">Зберегти зміни</button>
+                        <button id="btnCancelEdit" class="btn btn-secondary">Скасувати</button>
+                    </div>
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <!-- Modal for New Note -->
+    <div class="modal" id="newNoteModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h2>✨ Створення нової нотатки</h2>
+                <button class="modal-close" id="btnCloseModal">✕</button>
+            </div>
+            <form id="createNoteForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="mTitle">Назва нотатки *</label>
+                        <input type="text" id="mTitle" required placeholder="Наприклад: Архітектура пам'яті HBM3">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mCategory">Категорія PARA *</label>
+                            <select id="mCategory">
+                                <option value="Inbox" selected>Inbox</option>
+                                <option value="Projects">Projects</option>
+                                <option value="Areas">Areas</option>
+                                <option value="Resources">Resources</option>
+                                <option value="Archives">Archives</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mSource">Першоджерело</label>
+                            <input type="text" id="mSource" placeholder="Лекція 3, семінар, стаття...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mTags">Теги (через кому)</label>
+                        <input type="text" id="mTags" placeholder="hardware, memory, hbm">
+                    </div>
+                    <div class="form-group">
+                        <label for="mContent">Вміст нотатки (Markdown & [[Вікі-зв'язки]]) *</label>
+                        <textarea id="mContent" rows="8" required placeholder="Введіть короткий зміст, пункти або посилання на [[Іншу нотатку]]."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnCancelModal">Скасувати</button>
+                    <button type="submit" class="btn btn-primary">Створити нотатку</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
