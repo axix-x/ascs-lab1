@@ -262,6 +262,28 @@ class SecondBrainService:
         results.sort(key=lambda n: n.get("updated", "") or n.get("created", ""), reverse=True)
         return results
 
+    @staticmethod
+    def slugify(text: str) -> str:
+        """Converts title to a clean ASCII filename slug with Ukrainian transliteration."""
+        translit_map = {
+            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'h', 'ґ': 'g', 'д': 'd', 'е': 'e',
+            'є': 'ye', 'ж': 'zh', 'з': 'z', 'и': 'y', 'і': 'i', 'ї': 'yi', 'й': 'y',
+            'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+            'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch',
+            'ш': 'sh', 'щ': 'shch', 'ь': '', 'ю': 'yu', 'я': 'ya'
+        }
+        res = []
+        for ch in text.lower():
+            if ch in translit_map:
+                res.append(translit_map[ch])
+            elif ch.isalnum():
+                res.append(ch)
+            else:
+                res.append('-')
+        slug = ''.join(res)
+        slug = re.sub(r'-+', '-', slug).strip('-')
+        return slug or "untitled"
+
     def create_note(self, category: str, title: str, content: str, tags: List[str] = None, source: str = "") -> Dict[str, Any]:
         """Creates a new note file with proper frontmatter in the specified category."""
         if category not in self.CATEGORIES:
@@ -271,9 +293,8 @@ class SecondBrainService:
         tags = tags or ["draft"]
         source = source or "власний запис"
 
-        # Sanitize filename
-        safe_filename = re.sub(r'[\\/*?:"<>| ]', "-", title.lower().strip())
-        safe_filename = re.sub(r"-+", "-", safe_filename).strip("-") or "untitled"
+        # Sanitize filename to clean slug
+        safe_filename = self.slugify(title)
         filename = f"{safe_filename}.md"
 
         file_path = self.notes_dir / category / filename

@@ -7,9 +7,23 @@ from __future__ import annotations
 import json
 import os
 import sys
+from pathlib import Path
+
+# Reconfigure stdout/stderr to UTF-8 for Windows console compatibility
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+proj_root = Path(__file__).resolve().parent.parent
+if str(proj_root) not in sys.path:
+    sys.path.insert(0, str(proj_root))
+
 from http import HTTPStatus
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from src.second_brain import SecondBrainService
 
@@ -199,13 +213,13 @@ def run_server(port: int = 8080, base_dir: Path | str = "."):
 
     server_address = ("127.0.0.1", port)
     httpd = HTTPServer(server_address, SecondBrainHandler)
-    print(f"🚀 Second Brain Server running locally at http://127.0.0.1:{port}")
-    print(f"📁 Notes directory: {service.notes_dir}")
-    print(f"🌐 Warmup page: http://127.0.0.1:{port}/warmup")
+    print(f"[INFO] Second Brain Server running locally at http://127.0.0.1:{port}")
+    print(f"[PATH] Notes directory: {service.notes_dir}")
+    print(f"[WARMUP] Warmup page: http://127.0.0.1:{port}/warmup")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\n🛑 Shutting down server...")
+        print("\n[INFO] Shutting down server...")
         httpd.server_close()
 
 
